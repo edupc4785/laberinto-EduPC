@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Laberinto</title>
+</head>
+<body>
+    <section id="menuPrincipal">
+        <h1>Laberinto</h1>
+        <p>Elija un laberinto para comenzar</p>
+        <div class="options">
+            <select id="selectMap">
+                <option value="laberinto1">Laberinto 1</option>
+                <option value="laberinto2">Laberinto 2</option>
+                <option value="laberinto3">Laberinto 3</option>
+            </select>
+            <button onclick="startGame()">¡A jugar!</button>
+        </div>
+    </section>
+    <section>
+        <p>Vidas: <span id="vidas"></span></p>
+        <canvas id="canvas">
+        </canvas>
+    </section>
+<script src="DOM.js"></script>
+<script src="script.js"></script>
+<script src="inicio.js"></script>
+</body>
+</html>

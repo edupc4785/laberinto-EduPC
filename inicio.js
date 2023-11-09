@@ -1,7 +1,8 @@
 function startGame() {
-    canvas.classList.toggle('activo');
+    menuJuego.classList.toggle('activo');
     menuPrincipal.classList.toggle('activo');
 
-    conseguirMapa();
+    definirMapas();
+    pintarMapa();
     pintarPlayer();
 }

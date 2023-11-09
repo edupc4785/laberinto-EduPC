@@ -1,8 +1,9 @@
 const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
 const menuPrincipal = document.getElementById('menuPrincipal');
-const selectOptions = document.getElementById('selectMap');
+const menuJuego = document.getElementById('juegoMapa');
+const spanNivel = document.getElementById('nivel');
 
 const width = canvas.width = 500;
 const height = canvas.height = 500;
@@ -14,81 +15,79 @@ let crash = false;
 let murosLleno = false;
 
 let muros = [];
-let mapaElegido;
+let mapasOrden = [];
+let numLevel = 1
 
 //Declaracion de mapas
 let mapaCoords = [ 
-    {nombre : ["laberinto1"],tiles : [[1,2,3,4,5,6,7,8,9],[4,9],[0,2,4,6,7,9],[0,2,6,9],[0,2,3,4,6,8,9],[0,4,5,6,9],[0,1,2,4,6,7,8,9],[0,9],[0,1,3,4,5,6,7,9],[0,1,3,4,5,7]]},
-    {nombre : ["laberinto2"],tiles : [[],[]]},
-    {nombre : ["laberinto3"],tiles : [[],[]]}
+    {nombre : "laberinto1",tiles : [[1,2,3,4,5,6,7,8,9],[4,9],[0,2,4,6,7,9],[0,2,6,9],[0,2,3,4,6,8,9],[0,4,5,6,9],[0,1,2,4,6,7,8,9],[0,9],[0,1,3,4,5,6,7,9],[0,1,3,4,5,6,7]]},
+    {nombre : "laberinto2",tiles : [[2],[0,2,4,6,7,8],[4,8],[1,2,3,4,5,6,7,8],[0,1],[3,5,7,8,9],[1,2,3,5,7],[1,5,9],[1,3,4,5,6,7,8,9],[1]]},
+    {nombre : "laberinto3",tiles : [[2],[0,2,4,5,6,8],[2,6,7,8],[1,2,4,5,6],[2,4,6,7,8,9],[0,2,4],[2,6,7,8],[1,2,4,5,6],[1,4,6,8,9],[3,4]]},
+    {nombre: "laberinto4", tiles : [[2,8],[0,2,4,5,6,8],[0,6],[0,1,2,3,4,6,7,8],[4,8,9],[1,2,4,5,6,8],[2,8],[0,2,3,4,5,6,7,8],[0,2,6],[0,4,8]]}
 ];
-let meta = {color : 'lightblue', x: (tileCount-1)*bloque, y: (tileCount-1)*bloque};
-let player = {x: 0, y: 0};
 
+class objeto {
+    constructor(imagen, x, y) {
+        this.image = new Image;
+        this.image.src = imagen;
+        this.x = x;
+        this.y = y;
+    }
 
-
-function conseguirMapa() {
-    mapaElegido = selectOptions.options[selectOptions.selectedIndex].value;
-    pintarMapa(mapaElegido); 
-    pintarMeta();
+    pintarObjeto() {
+        ctx.drawImage(
+            this.image,
+            this.x,
+            this.y,
+            bloque,
+            bloque
+        )
+    }
 }
 
-//Pintar mapa segun cual sea el elegido
-function pintarMapa(eleccion) {
+let meta = new objeto(`./assets/diamante.png`, (tileCount-1)*bloque, (tileCount-1)*bloque);
+let player = new objeto(`./assets/player.png`, 0, 0);
 
-    //Mapa
-    for (let i = 0; i < mapaCoords.length; i++) {
-        if (eleccion == mapaCoords[i].nombre) {
-            for (let j = 0; j < mapaCoords[i].tiles.length; j++) {
-                ctx.fillStyle = 'green';
-                for (let k = 0; k < mapaCoords[i].tiles[j].length; k++) {
-                    ctx.fillRect(mapaCoords[i].tiles[j][k]*bloque,j*bloque,bloque,bloque);
-                    pushMuros({x: mapaCoords[i].tiles[j][k]*bloque, y: j*bloque});
-                }
-            }
-            murosLleno = true;
-            break;
+function definirMapas() {
+    let lista  = [];
+    for (let i = 0; i < 3; i++) {
+        let numAleat = Math.floor(Math.random() * mapaCoords.length);
+        if (!lista.includes(numAleat)) {
+            mapasOrden.push(numAleat);
+            lista.push(numAleat)
+        } else {
+            i--;
+        }
+    }
+}
+
+
+//Pintar mapa segun cual sea el elegido
+function pintarMapa() {
+    ctx.clearRect(0,0,width,height);
+    spanNivel.innerHTML = `Nivel ${numLevel}`;
+    let mapa = mapasOrden[numLevel-1];
+    for (let j = 0; j < mapaCoords[mapa].tiles.length; j++) {
+        for (let k = 0; k < mapaCoords[mapa].tiles[j].length; k++) {
+            muros.push({x: mapaCoords[mapa].tiles[j][k]*bloque, y: j*bloque, ubicacion: '', image: new Image});
         }
     }
 
-    //Formacion de malla de cuadros
-    for (let i = 0; i < width; i += bloque) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i, height);
-        ctx.stroke();
-    }
-
-    for (let i = 0; i < height; i += 50) {
-        ctx.beginPath();
-        ctx.moveTo(0, i);
-        ctx.lineTo(width, i);
-        ctx.stroke();
-    }
+    dibujarMuros();
+    pintarMeta();
 }
-
 function pintarMeta() {
-    //Meta
-    ctx.fillStyle = meta.color;
-    ctx.fillRect(meta.x,meta.y,bloque,bloque);
+    meta.pintarObjeto();
 }
 
 function pintarPlayer() {
-    ctx.fillStyle = 'blue';
-    ctx.fillRect(player.x,player.y,bloque,bloque);
+    player.pintarObjeto();
 
-    pintarMapa(mapaElegido);
+    validateWin();
 }
 
 function borrarPlayer() {
     ctx.clearRect(player.x,player.y,bloque,bloque);
-}
-
-function pintarPlayer() {
-    ctx.fillStyle = 'blue';
-    ctx.fillRect(player.x,player.y,bloque,bloque);
-
-    pintarMapa(mapaElegido);
 }
 
 function validateWin() {
@@ -99,15 +98,12 @@ function validateWin() {
 
 function validate(x, y) {
     if (x >= width || y >= height || x < 0 || y < 0) {
-        debugger;
         crash = true;
-        playerCrash();
     } else{
         for (let i = 0; i < muros.length; i++) {
             if (x == muros[i].x && y == muros[i].y) {
-            crash = true;
-            playerCrash();
-            break;
+                crash = true;
+                break;
             } else {
                 crash = false;
             }
@@ -119,7 +115,7 @@ function validate(x, y) {
         player.y = y;
         pintarPlayer();
     } else {
-        pintarPlayer();
+        playerCrash();
     }
 
 }
@@ -133,14 +129,17 @@ function playerCrash() {
 
 function playerWin() {
     alert('Ganaste!!');
-    window.location.reload();
+    siguienteNivel();
 }
 
-function pushMuros(muro) {
-    if (murosLleno){
-        return;
-    } else {
-        muros.push(muro);
+function siguienteNivel() {
+    numLevel++;
+    if (numLevel <= 3) {
+        player.x = 0;
+        player.y = 0;
+        muros = [];
+        pintarMapa();
+        pintarPlayer();
     }
 }
 

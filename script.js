@@ -41,7 +41,6 @@ function movimiento(direccion) {
             break;
     }
     
-    validateWin();
 }
 
 

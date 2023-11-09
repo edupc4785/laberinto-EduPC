@@ -9,22 +9,17 @@
 <body>
     <section id="menuPrincipal">
         <h1>Laberinto</h1>
-        <p>Elija un laberinto para comenzar</p>
+        <p>¿Podra superar los 3 laberintos?</p>
         <div class="options">
-            <select id="selectMap">
-                <option value="laberinto1">Laberinto 1</option>
-                <option value="laberinto2">Laberinto 2</option>
-                <option value="laberinto3">Laberinto 3</option>
-            </select>
             <button onclick="startGame()">¡A jugar!</button>
         </div>
     </section>
-    <section>
-        <p>Vidas: <span id="vidas"></span></p>
-        <canvas id="canvas">
-        </canvas>
-    </section>
+    <div id="juegoMapa">
+        <h1><span id="nivel"></span></h1>
+        <canvas id="canvas"></canvas>
+    </div>
 <script src="DOM.js"></script>
+<script src="muros.js"></script>
 <script src="script.js"></script>
 <script src="inicio.js"></script>
 </body>

@@ -19,7 +19,6 @@ function dibujarMuros() {
     }
 
     for (let i = 0; i < muros.length; i++) {
-        console.log(muros[i].ubicacion, muros[i].ubicacion.length)
         switch (muros[i].ubicacion.length){
             case 0:
                 muros[i].image.src = './assets/uni_centro.png';

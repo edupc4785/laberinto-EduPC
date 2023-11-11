@@ -4,6 +4,7 @@ const ctx = canvas.getContext('2d', { willReadFrequently: true });
 const menuPrincipal = document.getElementById('menuPrincipal');
 const menuJuego = document.getElementById('juegoMapa');
 const spanNivel = document.getElementById('nivel');
+const modal = document.getElementById('modal')
 
 const width = canvas.width = 500;
 const height = canvas.height = 500;
@@ -11,6 +12,7 @@ const height = canvas.height = 500;
 const bloque = 50;
 const tileCount = width / bloque;
 
+let vidasRestantes = 3;
 let crash = false;
 let murosLleno = false;
 
@@ -64,6 +66,8 @@ function definirMapas() {
 
 //Pintar mapa segun cual sea el elegido
 function pintarMapa() {
+    mostrarModal('inicio');
+
     ctx.clearRect(0,0,width,height);
     spanNivel.innerHTML = `Nivel ${numLevel}`;
     let mapa = mapasOrden[numLevel-1];
@@ -92,7 +96,8 @@ function borrarPlayer() {
 
 function validateWin() {
     if (player.x == meta.x && player.y == meta.y) {
-        playerWin();
+        mostrarModal('win');
+        siguienteNivel();
     }
 }
 
@@ -121,26 +126,85 @@ function validate(x, y) {
 }
 
 function playerCrash() {
-    alert('Game Over');
-    player.x = 0;
-    player.y = 0;
-    pintarPlayer();
+    vidasRestantes--;
+    if (vidasRestantes == 0) {
+        finJuego('terminoDerrota');
+    } else {
+        mostrarModal('crash');
+        player.x = 0;
+        player.y = 0;
+        pintarPlayer();
+    }
 }
 
-function playerWin() {
-    alert('Ganaste!!');
-    siguienteNivel();
+
+
+function mostrarModal(destino) {
+    setTimeout(function() {
+        ocultarModal();
+    }, 700);
+    
+    modal.classList.toggle('activo');
+    if(destino == 'inicio') {
+        modal.innerHTML = `
+        <div><h2>Comienza el Juego</h2>
+        <img src="./assets/${vidasRestantes}vidas.png"></img></div>`
+    } else if(destino == 'crash') {
+        modal.innerHTML = `
+        <div><h2>Perdiste</h2>
+        <p>Te quedan ${vidasRestantes} vidas</p>
+        <img src="./assets/${vidasRestantes}vidas.png"></div>`
+    } else if (destino == 'win') {
+        modal.innerHTML = `
+        <div><h2>Ganaste</h2>
+        <p>Enhorabuena pasas al Nivel ${numLevel}</p>
+        <img src="./assets/${vidasRestantes}vidas.png"></div>`
+    } else if (destino == 'terminoVictoria') {
+        modal.innerHTML = `
+        <div><h2>Terminaste</h2>
+        <p>Felicidades, ganaste con ${vidasRestantes} vidas</p>
+        <img src="./assets/${vidasRestantes}vidas.png"></img></div>`
+    } else if (destino == 'terminoDerrota') {
+        debugger;
+        modal.innerHTML = `
+        <div><h2>Terminó</h2>
+        <p>Perdiste, suerte para la siguiente</p>
+        <img src="./assets/0vidas.png"></img></div>`
+    }
+}
+
+function ocultarModal() {
+    modal.classList.toggle('activo');
 }
 
 function siguienteNivel() {
     numLevel++;
-    if (numLevel <= 3) {
+    if (numLevel > mapasOrden.length) {
+        finJuego('terminoVictoria');
+        return;
+    }
+    player.x = 0;
+    player.y = 0;
+    muros = [];
+    pintarMapa();
+    pintarPlayer();
+}
+
+function finJuego(mensaje) {
+    mostrarModal(mensaje);
+    setTimeout(function() {
+        menuJuego.classList.toggle('activo');
+        menuPrincipal.classList.toggle('activo');
+        muros = [];
+        mapasOrden = [];
+        numLevel = 1;
+        vidasRestantes = 3;
         player.x = 0;
         player.y = 0;
-        muros = [];
-        pintarMapa();
-        pintarPlayer();
-    }
+    }, 700);
+
+    //Alternativa
+    /*location.reload();    */
 }
 
 //mostrar el menuPrincipal al cargar la pagina
